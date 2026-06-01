@@ -32,8 +32,8 @@ function AdminLayout() {
 
   const links = [
     { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-    { to: "/admin/products", label: "Products", icon: Package },
-    { to: "/admin/categories", label: "Categories", icon: Tag },
+    { to: "/admin/products", label: "Products", icon: Package, exact: false },
+    { to: "/admin/categories", label: "Categories", icon: Tag, exact: false },
   ] as const;
 
   return (
