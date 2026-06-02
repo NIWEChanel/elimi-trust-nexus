@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { whatsappLink } from "@/lib/whatsapp";
-import { getFingerprint } from "@/lib/fingerprint";
+import { getFingerprint, favoritesClient } from "@/lib/fingerprint";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/products/$id")({
@@ -60,10 +60,11 @@ function ProductDetail() {
   const toggleLike = useMutation({
     mutationFn: async () => {
       const fp = getFingerprint();
+      const sb = favoritesClient();
       if (liked) {
-        await supabase.from("favorites").delete().eq("product_id", id).eq("fingerprint", fp);
+        await sb.from("favorites").delete().eq("product_id", id).eq("fingerprint", fp);
       } else {
-        await supabase.from("favorites").insert({ product_id: id, fingerprint: fp });
+        await sb.from("favorites").insert({ product_id: id, fingerprint: fp });
       }
     },
     onSuccess: () => {
