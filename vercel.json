@@ -1,8 +1,5 @@
 {
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ]
+  "buildCommand": "bun run build",
+  "outputDirectory": ".vercel/output",
+  "framework": null
 }
