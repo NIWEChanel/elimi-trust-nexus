@@ -1,6 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Plus, Trash2, KeyRound, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,22 +12,13 @@ import {
   listEmployees,
   deleteEmployee,
   resetEmployeePassword,
-} from "@/lib/employees.functions";
+} from "@/lib/employees.client";
 
-export const Route = createFileRoute("/admin/employees")({
-  component: AdminEmployees,
-});
-
-function AdminEmployees() {
+export function AdminEmployees() {
   const qc = useQueryClient();
-  const listFn = useServerFn(listEmployees);
-  const createFn = useServerFn(createEmployee);
-  const deleteFn = useServerFn(deleteEmployee);
-  const resetFn = useServerFn(resetEmployeePassword);
-
   const { data, isLoading } = useQuery({
     queryKey: ["employees"],
-    queryFn: () => listFn(),
+    queryFn: () => listEmployees(),
   });
 
   const [openCreate, setOpenCreate] = useState(false);
@@ -39,13 +28,11 @@ function AdminEmployees() {
 
   const create = useMutation({
     mutationFn: () =>
-      createFn({
-        data: {
-          email: form.email,
-          password: form.password,
-          fullName: form.fullName,
-          phone: form.phone || null,
-        },
+      createEmployee({
+        email: form.email,
+        password: form.password,
+        fullName: form.fullName,
+        phone: form.phone || null,
       }),
     onSuccess: () => {
       toast.success("Employee created");
@@ -57,7 +44,7 @@ function AdminEmployees() {
   });
 
   const del = useMutation({
-    mutationFn: (userId: string) => deleteFn({ data: { userId } }),
+    mutationFn: (userId: string) => deleteEmployee({ userId }),
     onSuccess: () => {
       toast.success("Employee deleted");
       qc.invalidateQueries({ queryKey: ["employees"] });
@@ -66,7 +53,7 @@ function AdminEmployees() {
   });
 
   const reset = useMutation({
-    mutationFn: () => resetFn({ data: { userId: resetFor!.id, newPassword: newPwd } }),
+    mutationFn: () => resetEmployeePassword({ userId: resetFor!.id, newPassword: newPwd }),
     onSuccess: () => {
       toast.success("Password reset");
       setResetFor(null);

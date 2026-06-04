@@ -1,6 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { Download, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,11 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { listEmployees } from "@/lib/employees.functions";
-
-export const Route = createFileRoute("/admin/reports")({
-  component: AdminReports,
-});
+import { listEmployees } from "@/lib/employees.client";
 
 type Report = {
   id: string;
@@ -26,8 +20,7 @@ type Report = {
   created_at: string;
 };
 
-function AdminReports() {
-  const listFn = useServerFn(listEmployees);
+export function AdminReports() {
   const today = new Date().toISOString().slice(0, 10);
   const ago = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
@@ -36,7 +29,7 @@ function AdminReports() {
   const [employee, setEmployee] = useState<string>("all");
   const [status, setStatus] = useState<"all" | "submitted" | "missing">("all");
 
-  const { data: empData } = useQuery({ queryKey: ["employees"], queryFn: () => listFn() });
+  const { data: empData } = useQuery({ queryKey: ["employees"], queryFn: () => listEmployees() });
   const employees = empData?.employees ?? [];
 
   const { data: reports } = useQuery({

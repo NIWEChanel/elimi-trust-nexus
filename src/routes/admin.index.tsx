@@ -1,15 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Package, CheckCircle2, Clock, Tag, Users, FileText, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentRole, todayISO } from "@/lib/use-role";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/admin/")({
-  component: AdminOverview,
-});
-
-function AdminOverview() {
+export function AdminOverview() {
   const { role, userId } = useCurrentRole();
 
   const { data: stats } = useQuery({
