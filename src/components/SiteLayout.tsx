@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, NavLink } from "react-router-dom";
 import { type ReactNode, useEffect, useState } from "react";
 import { Menu, X, Globe, Instagram, Facebook, Mail, Phone } from "lucide-react";
 import { useI18n, type Lang } from "@/lib/i18n";
@@ -15,7 +15,6 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const { t, lang, setLang } = useI18n();
   const [open, setOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setIsAuthed(!!data.session));
@@ -42,15 +41,18 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((n) => (
-              <Link
+              <NavLink
                 key={n.to}
                 to={n.to}
-                className="px-3 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition"
-                activeProps={{ className: "px-3 py-2 text-sm rounded-md text-gold bg-accent" }}
-                activeOptions={{ exact: n.to === "/" }}
+                end={n.to === "/"}
+                className={({ isActive }) =>
+                  isActive
+                    ? "px-3 py-2 text-sm rounded-md text-gold bg-accent"
+                    : "px-3 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition"
+                }
               >
                 {n.label}
-              </Link>
+              </NavLink>
             ))}
           </nav>
 
