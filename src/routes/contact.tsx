@@ -1,16 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { whatsappLink } from "@/lib/whatsapp";
 import { MessageCircle, Mail, Phone } from "lucide-react";
 
-export const Route = createFileRoute("/contact")({
-  head: () => ({ meta: [{ title: "Contact — Elimi Trust Ltd" }, { name: "description", content: "Contact Elimi Trust Ltd." }] }),
-  component: ContactPage,
-});
-
-function ContactPage() {
+export function ContactPage() {
   const { t } = useI18n();
   return (
     <SiteLayout>

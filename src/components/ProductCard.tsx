@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { MapPin, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
@@ -20,8 +20,7 @@ export function ProductCard({ product }: Props) {
   const statusKey = `status_${product.status}`;
   return (
     <Link
-      to="/products/$id"
-      params={{ id: product.id }}
+      to={`/products/${product.id}`}
       className="group block rounded-xl overflow-hidden bg-card hairline hover:shadow-luxury transition-all hover:-translate-y-0.5"
     >
       <div className="aspect-[4/3] bg-muted overflow-hidden relative">

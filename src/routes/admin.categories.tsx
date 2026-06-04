@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAsyncAction, useAsyncData } from "@/lib/use-async";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,27 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/categories")({
-  component: AdminCategories,
-});
-
 const TYPES = ["real_estate","land","vehicle","car","motorcycle","truck","computer","laptop","smartphone","tablet","electronics","tv","camera","furniture","fashion","accessories","rental","service","home_equipment","office_equipment","other"] as const;
 
-function AdminCategories() {
-  const qc = useQueryClient();
+export function AdminCategories() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ id: "", name: "", slug: "", product_type: "other", icon: "" });
 
-  const { data } = useQuery({
-    queryKey: ["categories-admin"],
-    queryFn: async () => {
-      const { data } = await supabase.from("categories").select("*").order("sort_order");
-      return data ?? [];
-    },
-  });
+  const { data, reload } = useAsyncData(async () => {
+    const { data } = await supabase.from("categories").select("*").order("sort_order");
+    return data ?? [];
+  }, []);
 
-  const save = useMutation({
-    mutationFn: async (f: typeof form) => {
+  const save = useAsyncAction(async (f: typeof form) => {
       const payload = { name: f.name, slug: f.slug, product_type: f.product_type as "other", icon: f.icon || null };
       if (f.id) {
         const { error } = await supabase.from("categories").update(payload).eq("id", f.id);
@@ -39,25 +29,23 @@ function AdminCategories() {
         const { error } = await supabase.from("categories").insert(payload);
         if (error) throw error;
       }
-    },
+    }, {
     onSuccess: () => {
       toast.success("Saved");
       setOpen(false);
       setForm({ id: "", name: "", slug: "", product_type: "other", icon: "" });
-      qc.invalidateQueries({ queryKey: ["categories-admin"] });
-      qc.invalidateQueries({ queryKey: ["categories"] });
+      reload();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const del = useMutation({
-    mutationFn: async (id: string) => {
+  const del = useAsyncAction(async (id: string) => {
       const { error } = await supabase.from("categories").delete().eq("id", id);
       if (error) throw error;
-    },
+    }, {
     onSuccess: () => {
       toast.success("Deleted");
-      qc.invalidateQueries({ queryKey: ["categories-admin"] });
+      reload();
     },
     onError: (e: Error) => toast.error(e.message),
   });

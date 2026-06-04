@@ -1,6 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useAsyncAction, useAsyncData } from "@/lib/use-async";
 import { useState } from "react";
 import { Plus, Trash2, KeyRound, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,59 +12,41 @@ import {
   listEmployees,
   deleteEmployee,
   resetEmployeePassword,
-} from "@/lib/employees.functions";
+} from "@/lib/employees.client";
 
-export const Route = createFileRoute("/admin/employees")({
-  component: AdminEmployees,
-});
-
-function AdminEmployees() {
-  const qc = useQueryClient();
-  const listFn = useServerFn(listEmployees);
-  const createFn = useServerFn(createEmployee);
-  const deleteFn = useServerFn(deleteEmployee);
-  const resetFn = useServerFn(resetEmployeePassword);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () => listFn(),
-  });
+export function AdminEmployees() {
+  const { data, isLoading, reload } = useAsyncData(() => listEmployees(), []);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "", phone: "" });
   const [resetFor, setResetFor] = useState<{ id: string; name: string } | null>(null);
   const [newPwd, setNewPwd] = useState("");
 
-  const create = useMutation({
-    mutationFn: () =>
-      createFn({
-        data: {
-          email: form.email,
-          password: form.password,
-          fullName: form.fullName,
-          phone: form.phone || null,
-        },
-      }),
+  const create = useAsyncAction(() =>
+    createEmployee({
+        email: form.email,
+        password: form.password,
+        fullName: form.fullName,
+        phone: form.phone || null,
+      }), {
     onSuccess: () => {
       toast.success("Employee created");
       setOpenCreate(false);
       setForm({ email: "", password: "", fullName: "", phone: "" });
-      qc.invalidateQueries({ queryKey: ["employees"] });
+      reload();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const del = useMutation({
-    mutationFn: (userId: string) => deleteFn({ data: { userId } }),
+  const del = useAsyncAction((userId: string) => deleteEmployee({ userId }),
     onSuccess: () => {
       toast.success("Employee deleted");
-      qc.invalidateQueries({ queryKey: ["employees"] });
+      reload();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const reset = useMutation({
-    mutationFn: () => resetFn({ data: { userId: resetFor!.id, newPassword: newPwd } }),
+  const reset = useAsyncAction(() => resetEmployeePassword({ userId: resetFor!.id, newPassword: newPwd }),
     onSuccess: () => {
       toast.success("Password reset");
       setResetFor(null);
