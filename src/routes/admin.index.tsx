@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import type { ComponentType } from "react";
 import { Package, CheckCircle2, Clock, Tag, Users, FileText, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentRole, todayISO } from "@/lib/use-role";
@@ -102,7 +103,7 @@ export function AdminOverview() {
   );
 }
 
-function Card({ label, value, icon: Icon }: { label: string; value: string | number; icon: React.ComponentType<{ className?: string }> }) {
+function Card({ label, value, icon: Icon }: { label: string; value: string | number; icon: ComponentType<{ className?: string }> }) {
   return (
     <div className="rounded-xl bg-card hairline p-5">
       <div className="flex items-center justify-between">
