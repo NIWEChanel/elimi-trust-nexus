@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useAsyncData } from "@/lib/use-async";
 import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { ProductCard } from "@/components/ProductCard";
@@ -12,17 +12,13 @@ export function ProductsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
 
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
+  const { data: categories } = useAsyncData(async () => {
       const { data } = await supabase.from("categories").select("id,name,slug").order("sort_order");
       return data ?? [];
-    },
-  });
+    };
+  }, []);
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ["products", search, category],
-    queryFn: async () => {
+  const { data: products, isLoading } = useAsyncData(async () => {
       let q = supabase
         .from("products")
         .select("id,title,price,currency,featured_image,location,status,like_count,category_id")
@@ -32,8 +28,8 @@ export function ProductsPage() {
       if (search.trim()) q = q.ilike("title", `%${search.trim()}%`);
       const { data } = await q;
       return data ?? [];
-    },
-  });
+    };
+  }, [search, category]);
 
   return (
     <SiteLayout>

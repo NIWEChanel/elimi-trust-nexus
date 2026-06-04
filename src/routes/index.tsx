@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useAsyncData } from "@/lib/use-async";
 import { ArrowRight, Shield, Zap, Globe } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { ProductCard } from "@/components/ProductCard";
@@ -9,9 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function Home() {
   const { t } = useI18n();
-  const { data: featured } = useQuery({
-    queryKey: ["home-featured"],
-    queryFn: async () => {
+  const { data: featured } = useAsyncData(async () => {
       const { data } = await supabase
         .from("products")
         .select("id,title,price,currency,featured_image,location,status,like_count")
@@ -19,19 +17,17 @@ export function Home() {
         .order("like_count", { ascending: false })
         .limit(8);
       return data ?? [];
-    },
-  });
-  const { data: recent } = useQuery({
-    queryKey: ["home-recent"],
-    queryFn: async () => {
+    };
+  }, []);
+  const { data: recent } = useAsyncData(async () => {
       const { data } = await supabase
         .from("products")
         .select("id,title,price,currency,featured_image,location,status,like_count")
         .order("created_at", { ascending: false })
         .limit(8);
       return data ?? [];
-    },
-  });
+    };
+  }, []);
 
   return (
     <SiteLayout>

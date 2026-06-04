@@ -1,6 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { useMemo } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageGate } from "@/components/LanguageGate";
@@ -36,11 +34,8 @@ function NotFound() {
 }
 
 export default function App() {
-  const queryClient = useMemo(() => new QueryClient(), []);
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nProvider>
+    <I18nProvider>
         <LanguageGate />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -63,6 +58,5 @@ export default function App() {
         </Routes>
         <Toaster theme="dark" />
       </I18nProvider>
-    </QueryClientProvider>
   );
 }

@@ -1,18 +1,16 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useAsyncData } from "@/lib/use-async";
 import { SiteLayout } from "@/components/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export function CategoriesPage() {
   const { t } = useI18n();
-  const { data } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
+  const { data } = useAsyncData(async () => {
       const { data } = await supabase.from("categories").select("*").order("sort_order");
       return data ?? [];
-    },
-  });
+    };
+  }, []);
 
   return (
     <SiteLayout>
