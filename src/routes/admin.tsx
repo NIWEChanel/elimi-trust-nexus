@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, Package, Tag, LogOut, Users, FileText, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,23 +7,19 @@ import { useCurrentRole, todayISO } from "@/lib/use-role";
 import { DailyReportDialog } from "@/components/DailyReportDialog";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin")({
-  beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) throw redirect({ to: "/login" });
-  },
-  component: AdminLayout,
-});
-
-function AdminLayout() {
+export function AdminLayout() {
   const navigate = useNavigate();
   const { userId, email, role, loading } = useCurrentRole();
   const [reportOpen, setReportOpen] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) navigate("/login", { replace: true });
+      setCheckingAuth(false);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) navigate({ to: "/login" });
+      if (!session) navigate("/login", { replace: true });
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
@@ -47,13 +43,17 @@ function AdminLayout() {
       }
     }
     await supabase.auth.signOut();
-    navigate({ to: "/login" });
+    navigate("/login", { replace: true });
   }
 
   async function onReportSubmitted() {
     setReportOpen(false);
     await supabase.auth.signOut();
-    navigate({ to: "/login" });
+    navigate("/login", { replace: true });
+  }
+
+  if (checkingAuth) {
+    return <div className="min-h-screen bg-background p-8 text-muted-foreground">Loading…</div>;
   }
 
   const superLinks = [
@@ -88,15 +88,18 @@ function AdminLayout() {
         </div>
         <nav className="p-3 space-y-1 flex-1">
           {links.map((l) => (
-            <Link
+            <NavLink
               key={l.to}
               to={l.to}
-              activeOptions={{ exact: l.exact }}
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              activeProps={{ className: "flex items-center gap-3 px-3 py-2 rounded-md text-sm bg-accent text-gold" }}
+              end={l.exact}
+              className={({ isActive }) =>
+                isActive
+                  ? "flex items-center gap-3 px-3 py-2 rounded-md text-sm bg-accent text-gold"
+                  : "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+              }
             >
               <l.icon className="w-4 h-4" /> {l.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
         <div className="p-3 border-t border-border">

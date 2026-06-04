@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -7,31 +7,18 @@ import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { bootstrapSuperAdmin } from "@/lib/admin-bootstrap.functions";
 import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Staff Login — Elimi Trust Ltd" }] }),
-  component: LoginPage,
-});
-
-function LoginPage() {
+export function LoginPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [email, setEmail] = useState("admin@elimitrust.com");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [seeding, setSeeding] = useState(true);
-
-  useEffect(() => {
-    bootstrapSuperAdmin()
-      .catch((e) => console.error("bootstrap", e))
-      .finally(() => setSeeding(false));
-  }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (session) navigate({ to: "/admin" });
+      if (session) navigate("/admin", { replace: true });
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
@@ -67,13 +54,13 @@ function LoginPage() {
               <Label htmlFor="password">{t("password")}</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
             </div>
-            <Button type="submit" disabled={busy || seeding} className="w-full bg-gradient-gold text-primary-foreground hover:opacity-90">
-              {busy || seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : t("sign_in")}
+            <Button type="submit" disabled={busy} className="w-full bg-gradient-gold text-primary-foreground hover:opacity-90">
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : t("sign_in")}
             </Button>
           </form>
 
           <p className="text-xs text-muted-foreground mt-6 text-center">
-            Default super admin: <code className="text-gold">admin@elimitrust.com</code> / <code className="text-gold">Admin@2026</code>
+            Use an existing backend staff account to sign in.
           </p>
           <p className="text-xs text-center mt-4">
             <Link to="/" className="text-muted-foreground hover:text-gold">← Back to home</Link>
