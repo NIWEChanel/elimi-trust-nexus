@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useAsyncData } from "@/lib/use-async";
 import type { ComponentType } from "react";
 import { Package, CheckCircle2, Clock, Tag, Users, FileText, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,10 +9,7 @@ import { Button } from "@/components/ui/button";
 export function AdminOverview() {
   const { role, userId } = useCurrentRole();
 
-  const { data: stats } = useQuery({
-    queryKey: ["admin-stats"],
-    enabled: role === "super_admin",
-    queryFn: async () => {
+  const { data: stats } = useAsyncData(async () => {
       const [all, sold, pending, cats, emps, reportsToday] = await Promise.all([
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "sold"),
@@ -29,13 +26,10 @@ export function AdminOverview() {
         employees: emps.count ?? 0,
         reportsToday: reportsToday.count ?? 0,
       };
-    },
-  });
+    };
+  }, [role], { enabled: role === "super_admin" });
 
-  const { data: myToday } = useQuery({
-    queryKey: ["my-today", userId],
-    enabled: !!userId && role === "employee",
-    queryFn: async () => {
+  const { data: myToday } = useAsyncData(async () => {
       const { data } = await supabase
         .from("employee_reports")
         .select("id")
@@ -43,20 +37,17 @@ export function AdminOverview() {
         .eq("report_date", todayISO())
         .maybeSingle();
       return !!data;
-    },
-  });
+    };
+  }, [userId, role], { enabled: !!userId && role === "employee" });
 
-  const { data: myUploads } = useQuery({
-    queryKey: ["my-uploads", userId],
-    enabled: !!userId && role === "employee",
-    queryFn: async () => {
+  const { data: myUploads } = useAsyncData(async () => {
       const { count } = await supabase
         .from("products")
         .select("id", { count: "exact", head: true })
         .eq("created_by", userId!);
       return count ?? 0;
-    },
-  });
+    };
+  }, [userId, role], { enabled: !!userId && role === "employee" });
 
   if (role === "employee") {
     return (
