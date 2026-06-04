@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Shield, Zap, Globe } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
@@ -7,17 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Elimi Trust Ltd — Premium Classified Marketplace" },
-      { name: "description", content: "Trusted Rwandan marketplace for real estate, vehicles, electronics and more." },
-    ],
-  }),
-  component: Home,
-});
-
-function Home() {
+export function Home() {
   const { t } = useI18n();
   const { data: featured } = useQuery({
     queryKey: ["home-featured"],
