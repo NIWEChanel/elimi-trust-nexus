@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
@@ -8,12 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/products")({
-  head: () => ({ meta: [{ title: "Products — Elimi Trust Ltd" }, { name: "description", content: "Browse all products on Elimi Trust marketplace." }] }),
-  component: ProductsPage,
-});
-
-function ProductsPage() {
+export function ProductsPage() {
   const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");

@@ -1,14 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { Instagram, Facebook, Mail, Phone, MessageCircle } from "lucide-react";
 
-export const Route = createFileRoute("/about")({
-  head: () => ({ meta: [{ title: "About — Elimi Trust Ltd" }, { name: "description", content: "About Elimi Trust Ltd, Rwanda's premium classified marketplace." }] }),
-  component: AboutPage,
-});
-
-function AboutPage() {
+export function AboutPage() {
   const { t } = useI18n();
   return (
     <SiteLayout>

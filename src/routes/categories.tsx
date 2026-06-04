@@ -1,15 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/SiteLayout";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/categories")({
-  head: () => ({ meta: [{ title: "Categories — Elimi Trust Ltd" }, { name: "description", content: "Browse product categories." }] }),
-  component: CategoriesPage,
-});
-
-function CategoriesPage() {
+export function CategoriesPage() {
   const { t } = useI18n();
   const { data } = useQuery({
     queryKey: ["categories"],
