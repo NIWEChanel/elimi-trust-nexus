@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Trash2, Edit } from "lucide-react";
@@ -11,10 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ImageUploader } from "@/components/ImageUploader";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/admin/products")({
-  component: AdminProducts,
-});
 
 type FormState = {
   id?: string;
@@ -51,7 +46,7 @@ function attrFieldsFor(type: string): string[] {
   return [];
 }
 
-function AdminProducts() {
+export function AdminProducts() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);

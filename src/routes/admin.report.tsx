@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { CheckCircle2, Plus, FileText } from "lucide-react";
@@ -8,11 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCurrentRole, todayISO } from "@/lib/use-role";
 import { DailyReportDialog } from "@/components/DailyReportDialog";
 
-export const Route = createFileRoute("/admin/report")({
-  component: EmployeeReportPage,
-});
-
-function EmployeeReportPage() {
+export function EmployeeReportPage() {
   const { userId } = useCurrentRole();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);

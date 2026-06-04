@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
@@ -10,13 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/categories")({
-  component: AdminCategories,
-});
-
 const TYPES = ["real_estate","land","vehicle","car","motorcycle","truck","computer","laptop","smartphone","tablet","electronics","tv","camera","furniture","fashion","accessories","rental","service","home_equipment","office_equipment","other"] as const;
 
-function AdminCategories() {
+export function AdminCategories() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ id: "", name: "", slug: "", product_type: "other", icon: "" });

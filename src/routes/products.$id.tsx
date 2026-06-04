@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MapPin, Heart, MessageCircle, ArrowLeft } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
@@ -9,50 +9,31 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { getFingerprint, favoritesClient } from "@/lib/fingerprint";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/products/$id")({
-  component: ProductDetail,
-  errorComponent: ({ error }) => (
-    <SiteLayout>
-      <div className="container mx-auto px-4 py-20 text-center">
-        <p className="text-muted-foreground">{error.message}</p>
-        <Link to="/products" className="text-gold hover:underline mt-4 inline-block">← Back to products</Link>
-      </div>
-    </SiteLayout>
-  ),
-  notFoundComponent: () => (
-    <SiteLayout>
-      <div className="container mx-auto px-4 py-20 text-center">
-        <p>Product not found.</p>
-        <Link to="/products" className="text-gold hover:underline mt-4 inline-block">← Back</Link>
-      </div>
-    </SiteLayout>
-  ),
-});
-
-function ProductDetail() {
-  const { id } = Route.useParams();
+export function ProductDetail() {
+  const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
   const qc = useQueryClient();
 
-  const { data: product, isLoading } = useQuery({
+  const { data: product, isLoading, error } = useQuery({
     queryKey: ["product", id],
+    enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
         .select("*, product_images(url,sort_order), categories(name)")
-        .eq("id", id)
+        .eq("id", id!)
         .maybeSingle();
       if (error) throw error;
-      if (!data) throw notFound();
       return data;
     },
   });
 
   const { data: liked } = useQuery({
     queryKey: ["fav", id],
+    enabled: !!id,
     queryFn: async () => {
       const fp = getFingerprint();
-      const { data } = await supabase.from("favorites").select("id").eq("product_id", id).eq("fingerprint", fp).maybeSingle();
+      const { data } = await supabase.from("favorites").select("id").eq("product_id", id!).eq("fingerprint", fp).maybeSingle();
       return !!data;
     },
   });
@@ -62,9 +43,9 @@ function ProductDetail() {
       const fp = getFingerprint();
       const sb = favoritesClient();
       if (liked) {
-        await sb.from("favorites").delete().eq("product_id", id).eq("fingerprint", fp);
+        await sb.from("favorites").delete().eq("product_id", id!).eq("fingerprint", fp);
       } else {
-        await sb.from("favorites").insert({ product_id: id, fingerprint: fp });
+        await sb.from("favorites").insert({ product_id: id!, fingerprint: fp });
       }
     },
     onSuccess: () => {
@@ -76,14 +57,35 @@ function ProductDetail() {
   if (isLoading) {
     return <SiteLayout><div className="container mx-auto px-4 py-10"><div className="h-96 rounded-xl bg-card animate-pulse" /></div></SiteLayout>;
   }
-  if (!product) return null;
+
+  if (error) {
+    return (
+      <SiteLayout>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground">{error instanceof Error ? error.message : "Product failed to load."}</p>
+          <Link to="/products" className="text-gold hover:underline mt-4 inline-block">← Back to products</Link>
+        </div>
+      </SiteLayout>
+    );
+  }
+
+  if (!product) {
+    return (
+      <SiteLayout>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p>Product not found.</p>
+          <Link to="/products" className="text-gold hover:underline mt-4 inline-block">← Back</Link>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   const images = [product.featured_image, ...(product.product_images?.map((i) => i.url) ?? [])].filter(Boolean) as string[];
   const waUrl = whatsappLink({
     number: product.whatsapp_number ?? undefined,
     productTitle: product.title,
     productId: product.id,
-    productUrl: typeof window !== "undefined" ? window.location.href : undefined,
+    productUrl: window.location.href,
   });
 
   return (
