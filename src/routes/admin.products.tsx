@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAsyncAction, useAsyncData } from "@/lib/use-async";
 import { useState } from "react";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,31 +47,25 @@ function attrFieldsFor(type: string): string[] {
 }
 
 export function AdminProducts() {
-  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);
 
-  const { data: products } = useQuery({
-    queryKey: ["admin-products"],
-    queryFn: async () => {
+  const { data: products, reload: reloadProducts } = useAsyncData(async () => {
       const { data } = await supabase
         .from("products")
         .select("id,title,price,currency,status,product_type,featured_image,created_at,attributes,description,category_id,condition,brand,quantity,district,sector,location,whatsapp_number,is_featured")
         .order("created_at", { ascending: false });
       return data ?? [];
-    },
-  });
+    };
+  }, []);
 
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
+  const { data: categories } = useAsyncData(async () => {
       const { data } = await supabase.from("categories").select("id,name,product_type").order("sort_order");
       return data ?? [];
-    },
-  });
+    };
+  }, []);
 
-  const save = useMutation({
-    mutationFn: async (f: FormState) => {
+  const save = useAsyncAction(async (f: FormState) => {
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
       if (!uid) throw new Error("Not authenticated");
@@ -115,25 +109,23 @@ export function AdminProducts() {
           );
         }
       }
-    },
+    }, {
     onSuccess: () => {
       toast.success("Saved");
       setOpen(false);
       setForm(empty);
-      qc.invalidateQueries({ queryKey: ["admin-products"] });
-      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      reloadProducts();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const del = useMutation({
-    mutationFn: async (id: string) => {
+  const del = useAsyncAction(async (id: string) => {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
-    },
+    }, {
     onSuccess: () => {
       toast.success("Deleted");
-      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      reloadProducts();
     },
     onError: (e: Error) => toast.error(e.message),
   });

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAsyncAction, useAsyncData } from "@/lib/use-async";
 import { useState } from "react";
 import { Plus, Trash2, KeyRound, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,45 +15,38 @@ import {
 } from "@/lib/employees.client";
 
 export function AdminEmployees() {
-  const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () => listEmployees(),
-  });
+  const { data, isLoading, reload } = useAsyncData(() => listEmployees(), []);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "", phone: "" });
   const [resetFor, setResetFor] = useState<{ id: string; name: string } | null>(null);
   const [newPwd, setNewPwd] = useState("");
 
-  const create = useMutation({
-    mutationFn: () =>
-      createEmployee({
+  const create = useAsyncAction(() =>
+    createEmployee({
         email: form.email,
         password: form.password,
         fullName: form.fullName,
         phone: form.phone || null,
-      }),
+      }), {
     onSuccess: () => {
       toast.success("Employee created");
       setOpenCreate(false);
       setForm({ email: "", password: "", fullName: "", phone: "" });
-      qc.invalidateQueries({ queryKey: ["employees"] });
+      reload();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const del = useMutation({
-    mutationFn: (userId: string) => deleteEmployee({ userId }),
+  const del = useAsyncAction((userId: string) => deleteEmployee({ userId }),
     onSuccess: () => {
       toast.success("Employee deleted");
-      qc.invalidateQueries({ queryKey: ["employees"] });
+      reload();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const reset = useMutation({
-    mutationFn: () => resetEmployeePassword({ userId: resetFor!.id, newPassword: newPwd }),
+  const reset = useAsyncAction(() => resetEmployeePassword({ userId: resetFor!.id, newPassword: newPwd }),
     onSuccess: () => {
       toast.success("Password reset");
       setResetFor(null);

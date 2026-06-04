@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAsyncData } from "@/lib/use-async";
 import { useState } from "react";
 import { CheckCircle2, Plus, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,13 +9,9 @@ import { DailyReportDialog } from "@/components/DailyReportDialog";
 
 export function EmployeeReportPage() {
   const { userId } = useCurrentRole();
-  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
 
-  const { data: history } = useQuery({
-    queryKey: ["my-reports", userId],
-    enabled: !!userId,
-    queryFn: async () => {
+  const { data: history, reload } = useAsyncData(async () => {
       const { data, error } = await supabase
         .from("employee_reports")
         .select("*")
@@ -24,8 +20,8 @@ export function EmployeeReportPage() {
         .limit(60);
       if (error) throw error;
       return data ?? [];
-    },
-  });
+    };
+  }, [userId], { enabled: !!userId });
 
   const submittedToday = history?.some((r) => r.report_date === todayISO());
 
@@ -83,7 +79,7 @@ export function EmployeeReportPage() {
           userId={userId}
           onSubmitted={() => {
             setOpen(false);
-            qc.invalidateQueries({ queryKey: ["my-reports", userId] });
+            reload();
           }}
           title="Submit today's daily report"
           description="Your report will be sent immediately to the Super Admin."

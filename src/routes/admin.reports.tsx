@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useAsyncData } from "@/lib/use-async";
 import { useMemo, useState } from "react";
 import { Download, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,12 +29,10 @@ export function AdminReports() {
   const [employee, setEmployee] = useState<string>("all");
   const [status, setStatus] = useState<"all" | "submitted" | "missing">("all");
 
-  const { data: empData } = useQuery({ queryKey: ["employees"], queryFn: () => listEmployees() });
+  const { data: empData } = useAsyncData(() => listEmployees(), []);
   const employees = empData?.employees ?? [];
 
-  const { data: reports } = useQuery({
-    queryKey: ["reports", from, to, employee],
-    queryFn: async () => {
+  const { data: reports } = useAsyncData(async () => {
       let q = supabase
         .from("employee_reports")
         .select("*")
@@ -45,8 +43,8 @@ export function AdminReports() {
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as Report[];
-    },
-  });
+    };
+  }, [from, to, employee]);
 
   const empMap = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
 
